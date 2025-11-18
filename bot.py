@@ -1,3 +1,4 @@
+ 
 from dotenv import load_dotenv
 import os
 
@@ -133,10 +134,40 @@ def admin_menu_kb():
         [InlineKeyboardButton("🗂 Arizalar ro'yxati", callback_data="admin_apps")],
         [InlineKeyboardButton("📤 Broadcast xabar", callback_data="admin_broadcast")],
         [InlineKeyboardButton("📢 Auto-reklama ON/OFF", callback_data="admin_toggle_ads")],
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+
+# Bot tokeningiz
+TOKEN = "8530769366:AAE_GJeCC4d_jRjBdk2784NB5KFX10CO6Ic"
+
+# Kartalar va ularning ma'lumotlari
+cards_info = {
+    "uzcard_unionpay": "1️⃣ Uzcard + UnionPay\nNarxi: 40 000 so‘m\nMuddati: 3 yil\nValyuta: So‘m",
+    "humo_visa": "2️⃣ Humo + Visa\nNarxi: 61 800 so‘m\nMuddati: 5 yil\nValyuta: So‘m",
+    "visa": "3️⃣ Visa karta\nNarxi: 25 000 so‘m\nValyuta: Faqat dollar tushadi va faqat dollar yechiladi",
+    "uzcard_kids": "4️⃣ Uzcard Kids karta\nNarxi va boshqa shartlar: maxsus bolalar uchun"
+}
+
+# Bosh menyu tugmalari
+def main_menu_keyboard():
+    keyboard = [
+        [InlineKeyboardButton("Uzcard + UnionPay", callback_data="uzcard_unionpay")],
+        [InlineKeyboardButton("Humo + Visa", callback_data="humo_visa")],
+        [InlineKeyboardButton("Visa karta", callback_data="visa")],
+        [InlineKeyboardButton("Uzcard Kids karta", callback_data="uzcard_kids")]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+# Orqaga qaytish tugmasi
+def back_button_keyboard():
+    keyboard = [
+>>>>>>> 0dee1da (Initial commit: Uzcard Telegram bot)
         [InlineKeyboardButton("🔙 Orqaga", callback_data="back")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
+ 
 # ========== START ==========
 def start(update: Update, context: CallbackContext):
     user = update.message.from_user
@@ -375,4 +406,35 @@ def main():
 if __name__ == "__main__":
     main()
 
+
+# /start buyrug'i
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Kartalar ro‘yxatiga xush kelibsiz! Birini tanlang:", 
+                                    reply_markup=main_menu_keyboard())
+
+# Tugma bosilganda
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+
+    if data in cards_info:
+        # Malumotni ko‘rsatish + orqaga tugma
+        await query.edit_message_text(text=cards_info[data], reply_markup=back_button_keyboard())
+    elif data == "back":
+        # Bosh menyuga qaytish
+        await query.edit_message_text("Kartalar ro‘yxatiga qaytdingiz. Birini tanlang:", reply_markup=main_menu_keyboard())
+    else:
+        await query.edit_message_text("Bu tugma hozircha ishlamaydi.")
+
+# Botni ishga tushirish
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CallbackQueryHandler(button))
+
+print("UZCARD Telegram bot ishlayapti...")
+app.run_polling()
+
+
+ 0dee1da (Initial commit: Uzcard Telegram bot)
 

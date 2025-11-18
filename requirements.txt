@@ -1,3 +1,6 @@
 python-telegram-bot==22.5
+
 requests==2.32.5
 
+
+ 0dee1da (Initial commit: Uzcard Telegram bot)
