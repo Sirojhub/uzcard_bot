@@ -1,3 +1,4 @@
+
 # bot_ptb20.py
 import os
 import json
@@ -33,6 +34,13 @@ if os.path.exists(STATS_FILE):
 def save_stats():
     with open(STATS_FILE, "w", encoding="utf-8") as f:
         json.dump(stats, f, ensure_ascii=False, indent=2)
+import os
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+
+TOKEN = os.environ.get("TOKEN")  # Render-da environment variable sifatida TOKEN qo'shing
+ADMIN_ID = int(os.environ.get("ADMIN_ID", "123456789"))
+
 
 # ========= KEYBOARDS =========
 def main_menu():
@@ -45,6 +53,7 @@ def main_menu():
 
 def back_button():
     return InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Orqaga", callback_data="back")]])
+
 
 # ========= DOLLAR RATE =========
 def get_usd_rate():
@@ -64,12 +73,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_id not in stats["users"]:
         stats["users"].append(user_id)
         save_stats()
+
+# ========= HANDLERS =========
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     await update.message.reply_text("Kartalar ro‘yxatiga xush kelibsiz!", reply_markup=main_menu())
 
 async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
+
 
     stats["menu_clicks"] += 1
     save_stats()
@@ -99,4 +113,26 @@ async def main():
 
 import asyncio
 asyncio.run(main())
+
+    if data == "uzcard":
+        await query.edit_message_text("💳 Uzcard + UnionPay\nNarxi: 40 000 so‘m\nMuddati: 3 yil", reply_markup=back_button())
+    elif data == "dollar":
+        await query.edit_message_text("💵 1 USD = 11 000 so‘m", reply_markup=back_button())  # demo kurs
+    elif data == "stats":
+        await query.edit_message_text("Statistika demo", reply_markup=back_button())
+    elif data == "back":
+        await query.edit_message_text("Kartalar ro‘yxatiga qaytdingiz.", reply_markup=main_menu())
+
+# ========= APPLICATION =========
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CallbackQueryHandler(callback_button))
+
+# ========= RENDERDA POLLING =========
+if __name__ == "__main__":
+    import asyncio
+    loop = asyncio.get_event_loop()
+    loop.create_task(app.run_polling())
+    loop.run_forever()
+
 
