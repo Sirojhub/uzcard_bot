@@ -11,7 +11,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # ========= CONFIG =========
-TOKEN = "5766211255:AAFZwXf_0v5SpXEqSCcUgGUmbb1fMwWLI2Q"
+TOKEN = os.environ.get("TOKEN")
+ 
 ADMIN_ID = 123456789
 
 STATS_FILE = "stats.json"
